@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Seva Sansaar
 
-## Getting Started
+Seva Sansaar is a full-stack service booking platform designed to simplify access to essential services for users in Tier 2 and Tier 3 cities.
 
-First, run the development server:
+Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- User authentication
+- Service catalog
+- Service category and pricing
+- Date and time-slot selection
+- Booking confirmation
+- Cart and checkout
+- Demo payment processing
+- Transaction recording
+- My Bookings section
+- Admin service management
+- Partner/vendor approval
+- Live booking monitoring
+- Payment and transaction monitoring
+- Revenue and commission tracking
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Next.js
+- TypeScript
+- React
+- Supabase
+- PostgreSQL
+- Prisma
+- Tailwind CSS
+- GitHub
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Booking Flow
 
-## Learn More
+1. User logs in or signs up.
+2. User selects a service.
+3. User selects date and available time slot.
+4. User confirms the booking.
+5. Service is added to the cart.
+6. User proceeds to checkout.
+7. Demo payment is processed.
+8. Booking and transaction details are stored.
+9. User can view the booking in My Bookings.
+10. Admin can monitor bookings and transactions.
 
-To learn more about Next.js, take a look at the following resources:
+Admin Panel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The admin panel provides:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Service catalog CRUD
+- Pricing and duration management
+- Partner approval management
+- Booking monitoring
+- Transaction monitoring
+- Revenue metrics
+- Commission and payout tracking
 
-## Deploy on Vercel
+Payment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The current assignment version uses a Demo Payment flow.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The system records:
+
+- Transaction amount
+- Payment method
+- Transaction reference
+- Booking ID
+- Payment status
+- User ID
+- Transaction date
+
+The payment architecture can later be extended with Razorpay integration and webhook-based verification.
+
+Database
+
+The application uses Supabase/PostgreSQL for persistent data storage.
+
+Main entities include:
+
+- Users
+- Services
+- Bookings
+- Transactions
+- Partners
+
+Row Level Security (RLS) policies are used for protected database operations.
+
+Project Status
+
+Core booking, checkout, transaction, and admin management features are implemented and tested.
+
+Repository
+
+GitHub repository:
+
+"https://github.com/bhupesh30-code/seva-sansaar"
