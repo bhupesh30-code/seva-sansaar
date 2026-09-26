@@ -1,101 +1,368 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [menuOpen, setMenuOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <main className="min-h-screen bg-gray-50">
+
+      {/* HEADER */}
+      <header className="bg-blue-700 text-white shadow-lg">
+        <div className="mx-auto max-w-7xl px-6 py-5">
+
+          <div className="flex items-center justify-between">
+
+            {/* Logo */}
+            <div>
+              <h1 className="text-2xl font-bold">
+                Seva Sansaar
+              </h1>
+
+              <p className="text-sm text-blue-100">
+                Citizen Services Portal
+              </p>
+            </div>
+
+            {/* Desktop Menu */}
+            <nav className="hidden items-center gap-6 md:flex">
+
+              <a
+                href="/"
+                className="hover:text-blue-200"
+              >
+                Home
+              </a>
+
+              <a
+                href="#services"
+                className="hover:text-blue-200"
+              >
+                Services
+              </a>
+
+              <a
+                href="#about"
+                className="hover:text-blue-200"
+              >
+                About
+              </a>
+
+              <a
+                href="#contact"
+                className="hover:text-blue-200"
+              >
+                Contact
+              </a>
+
+              <a
+                href="/login"
+                className="rounded-lg bg-white px-5 py-2 font-semibold text-blue-700 hover:bg-blue-50"
+              >
+                Login
+              </a>
+
+            </nav>
+
+            {/* Mobile Button */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="rounded-lg bg-blue-600 px-3 py-2 text-2xl md:hidden"
+            >
+              {menuOpen ? "✕" : "☰"}
+            </button>
+
+          </div>
+
+          {/* Mobile Menu */}
+          {menuOpen && (
+            <nav className="mt-5 flex flex-col gap-2 border-t border-blue-500 pt-5 md:hidden">
+
+              <a
+                href="/"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-lg px-3 py-3 hover:bg-blue-600"
+              >
+                Home
+              </a>
+
+              <a
+                href="#services"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-lg px-3 py-3 hover:bg-blue-600"
+              >
+                Services
+              </a>
+
+              <a
+                href="#about"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-lg px-3 py-3 hover:bg-blue-600"
+              >
+                About
+              </a>
+
+              <a
+                href="#contact"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-lg px-3 py-3 hover:bg-blue-600"
+              >
+                Contact
+              </a>
+
+              <a
+                href="/login"
+                className="mt-2 rounded-lg bg-white px-4 py-3 text-center font-semibold text-blue-700"
+              >
+                Login
+              </a>
+
+            </nav>
+          )}
+
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </header>
+
+      {/* HERO */}
+      <section className="bg-blue-700 px-6 pb-20 pt-16 text-white">
+        <div className="mx-auto max-w-7xl">
+
+          <div className="max-w-3xl">
+
+            <p className="font-semibold text-blue-200">
+              DIGITAL CITIZEN SERVICES
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold leading-tight md:text-6xl">
+              Your Services,
+              <br />
+              Simplified.
+            </h2>
+
+            <p className="mt-6 text-lg text-blue-100">
+              Check required documents, prepare applications,
+              and access citizen services from one simple portal.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+
+              <a
+                href="/login"
+                className="rounded-lg bg-white px-6 py-3 font-semibold text-blue-700 hover:bg-blue-50"
+              >
+                Get Started →
+              </a>
+
+              <a
+                href="#services"
+                className="rounded-lg border border-white px-6 py-3 font-semibold text-white hover:bg-blue-600"
+              >
+                Explore Services
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section
+        id="services"
+        className="mx-auto max-w-7xl px-6 py-16"
+      >
+
+        <div className="text-center">
+
+          <p className="font-semibold text-blue-700">
+            OUR SERVICES
+          </p>
+
+          <h3 className="mt-2 text-3xl font-bold text-gray-900">
+            Popular Citizen Services
+          </h3>
+
+          <p className="mx-auto mt-3 max-w-2xl text-gray-600">
+            Select a service to check documents and prepare
+            your application.
+          </p>
+
+        </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+
+          {/* AADHAAR */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-xl font-bold text-blue-700">
+              A
+            </div>
+
+            <h4 className="mt-5 text-xl font-bold text-gray-900">
+              Aadhaar Update
+            </h4>
+
+            <p className="mt-3 text-gray-600">
+              Check documents and prepare your Aadhaar application.
+            </p>
+
+            <a
+              href="/services/aadhaar"
+              className="mt-5 inline-block font-semibold text-blue-700"
+            >
+              Open Service →
+            </a>
+
+          </div>
+
+          {/* RATION */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-xl font-bold text-green-700">
+              R
+            </div>
+
+            <h4 className="mt-5 text-xl font-bold text-gray-900">
+              Ration Card
+            </h4>
+
+            <p className="mt-3 text-gray-600">
+              Prepare documents and information for ration card services.
+            </p>
+
+            <a
+              href="/services/ration"
+              className="mt-5 inline-block font-semibold text-blue-700"
+            >
+              Open Service →
+            </a>
+
+          </div>
+
+          {/* FIR */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-xl font-bold text-red-700">
+              F
+            </div>
+
+            <h4 className="mt-5 text-xl font-bold text-gray-900">
+              FIR
+            </h4>
+
+            <p className="mt-3 text-gray-600">
+              Prepare information for the demo FIR application.
+            </p>
+
+            <a
+              href="/services/fir"
+              className="mt-5 inline-block font-semibold text-blue-700"
+            >
+              Open Service →
+            </a>
+
+          </div>
+
+          {/* INCOME */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-xl font-bold text-purple-700">
+              I
+            </div>
+
+            <h4 className="mt-5 text-xl font-bold text-gray-900">
+              Income Certificate
+            </h4>
+
+            <p className="mt-3 text-gray-600">
+              Prepare information for an income certificate application.
+            </p>
+
+            <a
+              href="/services/income"
+              className="mt-5 inline-block font-semibold text-blue-700"
+            >
+              Open Service →
+            </a>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section
+        id="about"
+        className="bg-white px-6 py-16"
+      >
+
+        <div className="mx-auto max-w-5xl text-center">
+
+          <p className="font-semibold text-blue-700">
+            ABOUT US
+          </p>
+
+          <h3 className="mt-2 text-3xl font-bold text-gray-900">
+            Simple. Digital. Citizen Friendly.
+          </h3>
+
+          <p className="mt-5 text-gray-600">
+            Seva Sansaar is a demo digital portal designed to
+            make citizen-service preparation easier by bringing
+            document checklists and application forms together
+            in one place.
+          </p>
+
+        </div>
+
+      </section>
+
+      {/* CONTACT */}
+      <section
+        id="contact"
+        className="px-6 py-16"
+      >
+
+        <div className="mx-auto max-w-4xl rounded-2xl bg-blue-50 p-8 text-center">
+
+          <h3 className="text-2xl font-bold text-gray-900">
+            Need Help?
+          </h3>
+
+          <p className="mt-3 text-gray-600">
+            Explore the dashboard to access all available services.
+          </p>
+
+          <a
+            href="/dashboard"
+            className="mt-6 inline-block rounded-lg bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"
+          >
+            Go to Dashboard →
+          </a>
+
+        </div>
+
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-gray-900 px-6 py-8 text-center text-white">
+
+        <p className="font-semibold">
+          Seva Sansaar
+        </p>
+
+        <p className="mt-2 text-sm text-gray-400">
+          Simple • Digital • Citizen Friendly
+        </p>
+
+        <p className="mt-4 text-xs text-gray-500">
+          Demo project for citizen-service application preparation.
+        </p>
+
       </footer>
-    </div>
+
+    </main>
   );
 }
