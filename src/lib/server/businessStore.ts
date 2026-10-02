@@ -15,6 +15,10 @@ const COL_BUSINESSES = "businesses";
 const COL_BOOKINGS = "bookings";
 const COL_ANALYTICS = "analyticsEvents";
 
+function generateServiceOtp() {
+  return String(randomBytes(3).readUIntBE(0, 3) % 1000000).padStart(6, "0");
+}
+
 function slugify(name: string, id: string) {
   const base = name
     .toLowerCase()
@@ -70,6 +74,10 @@ export async function createBusiness(input: {
     serviceAreas: input.serviceAreas,
     status: "pending",
     verified: false,
+    // Partner onboarding / KYC
+    onboardingStatus: "not_started",
+    serviceRadiusKm: 10,
+    documents: [],
     notificationEmail: true,
     notificationSms: false,
     notificationWhatsapp: true,
@@ -150,6 +158,9 @@ export async function updateBusiness(
       | "description"
       | "photoUrls"
       | "serviceAreas"
+      | "onboardingStatus"
+      | "serviceRadiusKm"
+      | "documents"
       | "notificationEmail"
       | "notificationSms"
       | "notificationWhatsapp"
@@ -209,6 +220,8 @@ export async function seedBookingsIfEmpty(businessId: string) {
     {
       businessId,
       customerName: "Sample Customer",
+      customerPhone: "9876543210",
+      serviceAddress: "Lonavala, Maharashtra, India",
       serviceLabel: "Home visit",
       scheduledAt: new Date(Date.now() + 86400000 * 2).toISOString(),
       status: "pending",
@@ -217,6 +230,8 @@ export async function seedBookingsIfEmpty(businessId: string) {
     {
       businessId,
       customerName: "Priya S.",
+      customerPhone: "9876543210",
+      serviceAddress: "Lonavala, Maharashtra, India",
       serviceLabel: "Consultation",
       scheduledAt: new Date(Date.now() - 86400000 * 3).toISOString(),
       status: "completed",
@@ -243,30 +258,132 @@ export async function seedBookingsIfEmpty(businessId: string) {
   localDb.write(data);
 }
 
+export type BookingStatusUpdateResult =
+  | { ok: true; booking: BookingRecord }
+  | {
+      ok: false;
+      reason: "not_found" | "invalid_transition" | "invalid_otp";
+    };
+
 export async function setBookingStatus(
   businessId: string,
   ownerSecret: string,
   bookingId: string,
-  status: BookingRecord["status"]
-): Promise<BookingRecord | null> {
+  status: BookingRecord["status"],
+  serviceOtp?: string
+): Promise<BookingStatusUpdateResult> {
   const b = await getBusinessBySecret(businessId, ownerSecret);
-  if (!b) return null;
+
+  if (!b) {
+    return { ok: false, reason: "not_found" };
+  }
+
+  const allowedTransitions: Record<
+    BookingRecord["status"],
+    BookingRecord["status"][]
+  > = {
+    pending: ["confirmed", "cancelled"],
+    confirmed: ["in_progress", "cancelled"],
+    in_progress: ["completed", "cancelled"],
+    cancelled: [],
+    completed: [],
+  };
 
   const db = getFirestore();
   if (db) {
     const ref = db.collection(COL_BOOKINGS).doc(bookingId);
     const doc = await ref.get();
-    if (!doc.exists) return null;
+    if (!doc.exists) {
+      return { ok: false, reason: "not_found" };
+    }
     const row = doc.data() as BookingRecord;
-    if (row.businessId !== businessId) return null;
-    const next = { ...row, status };
+    if (row.businessId !== businessId) {
+      return { ok: false, reason: "not_found" };
+    }
+    if (!allowedTransitions[row.status].includes(status)) {
+      return { ok: false, reason: "invalid_transition" };
+    }
+    if (status === "completed") {
+      if (!serviceOtp || serviceOtp !== row.serviceOtp) {
+        return { ok: false, reason: "invalid_otp" };
+      }
+    }
+    const next: BookingRecord = {
+      ...row,
+      status,
+      ...(status === "in_progress"
+        ? {
+            serviceOtp: generateServiceOtp(),
+            serviceOtpVerified: false,
+          }
+        : {}),
+    };
+    await ref.set(next);
+    return { ok: true, booking: next };
+  }
+  const data = localDb.read();
+  const row = data.bookings[bookingId];
+  if (!row || row.businessId !== businessId) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (!allowedTransitions[row.status].includes(status)) {
+    return { ok: false, reason: "invalid_transition" };
+  }
+  if (status === "completed") {
+    if (!serviceOtp || serviceOtp !== row.serviceOtp) {
+      return { ok: false, reason: "invalid_otp" };
+    }
+  }
+  row.status = status;
+  if (status === "in_progress") {
+    row.serviceOtp = generateServiceOtp();
+    row.serviceOtpVerified = false;
+  }
+  localDb.write(data);
+  return { ok: true, booking: row };
+}
+
+export async function updateBookingPhotoProof(
+  businessId: string,
+  ownerSecret: string,
+  bookingId: string,
+  type: "before" | "after",
+  url: string
+): Promise<BookingRecord | null> {
+  const b = await getBusinessBySecret(businessId, ownerSecret);
+  if (!b) {
+    return null;
+  }
+  const db = getFirestore();
+  if (db) {
+    const ref = db.collection(COL_BOOKINGS).doc(bookingId);
+    const doc = await ref.get();
+    if (!doc.exists) {
+      return null;
+    }
+    const row = doc.data() as BookingRecord;
+
+    if (row.businessId !== businessId) {
+      return null;
+    }
+    const field = type === "before" ? "beforePhotoUrls" : "afterPhotoUrls";
+    const currentUrls = row[field] ?? [];
+    const next: BookingRecord = {
+      ...row,
+      [field]: [...currentUrls, url],
+    };
     await ref.set(next);
     return next;
   }
   const data = localDb.read();
   const row = data.bookings[bookingId];
-  if (!row || row.businessId !== businessId) return null;
-  row.status = status;
+  if (!row || row.businessId !== businessId) {
+    return null;
+  }
+
+  const field = type === "before" ? "beforePhotoUrls" : "afterPhotoUrls";
+  const currentUrls = row[field] ?? [];
+  row[field] = [...currentUrls, url];
   localDb.write(data);
   return row;
 }

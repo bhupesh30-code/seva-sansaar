@@ -36,12 +36,13 @@ export async function POST(req: Request) {
     }
 
     // Sanitize response — only return safe fields
-    return NextResponse.json({
-      businessId: owner.id,
-      slug: owner.slug,
-      name: owner.name,
-      status: owner.status,
-    });
+  return NextResponse.json({
+    businessId: owner.id,
+    ownerSecret: owner.ownerSecret,
+    slug: owner.slug,
+    name: owner.name,
+    status: owner.status,
+  });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Login failed." }, { status: 500 });

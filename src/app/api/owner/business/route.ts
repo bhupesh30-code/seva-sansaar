@@ -4,6 +4,7 @@ import { getBusinessBySecret, updateBusiness } from "@/lib/server/businessStore"
 import { parseOwnerAuth } from "@/lib/server/ownerAuth";
 import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX } from "@/lib/constants";
 import type { ServiceAreaPlace } from "@/lib/types/owner";
+import { listBookingsForBusiness } from "@/lib/server/businessStore";
 
 // Allowlist of updatable fields — prevents mass assignment attacks
 const ALLOWED_PATCH_FIELDS = new Set([
@@ -58,8 +59,57 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const bookings = await listBookingsForBusiness(auth.businessId);
+  const totalBookings = bookings.length;
+  const completedBookings = bookings.filter(
+    (booking) => booking.status === "completed"
+  ).length;
+
+  const totalEarnings = bookings
+  .filter((booking) => booking.status === "completed")
+  .reduce((total, booking) => total + (booking.estimatedAmount ?? 0), 0);
+
+    const completedForEarnings = bookings.filter(
+    (booking) => booking.status === "completed");
+
+      const now = new Date();
+      const startOfToday = new Date(now);
+      startOfToday.setHours(0, 0, 0, 0);
+      const startOfWeek = new Date(now);
+      const day = startOfWeek.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      startOfWeek.setDate(startOfWeek.getDate() + diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+      const dailyEarnings = completedForEarnings
+        .filter(
+          (booking) => new Date(booking.scheduledAt).getTime() >= startOfToday.getTime())
+        .reduce((total, booking) => total + (booking.estimatedAmount ?? 0),0 );
+      const weeklyEarnings = completedForEarnings
+        .filter(
+          (booking) => new Date(booking.scheduledAt).getTime() >= startOfWeek.getTime())
+        .reduce((total, booking) => total + (booking.estimatedAmount ?? 0),0);
+          
+  const activeRequests = bookings.filter(
+    (booking) =>
+      booking.status === "pending" ||
+      booking.status === "confirmed" ||
+      booking.status === "in_progress"
+  ).length;
+
+  const completionRate =
+  totalBookings > 0
+    ? Math.round((completedBookings / totalBookings) * 100)
+    : 0;
+
   const { passwordHash: _ignored1, ownerSecret: _ignored2, ...safe } = b;
-  return NextResponse.json(safe);
+
+  return NextResponse.json({
+    ...safe,
+    totalEarnings,
+    dailyEarnings,
+    weeklyEarnings,
+    completionRate,
+  });
 }
 
 export async function PATCH(req: NextRequest) {

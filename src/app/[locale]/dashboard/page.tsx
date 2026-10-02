@@ -15,13 +15,20 @@ import { ownerAuthHeader, readOwnerSession } from "@/lib/ownerClient";
 import { VerificationBadge } from "@/components/VerificationBadge";
 
 type Biz = {
-  name: string;
-  status: string;
-  verified: boolean;
-  city: string;
-  category: string;
-  bookingsCount?: number;
-  totalEarnings?: number;
+   name: string;
+   status: string;
+   verified: boolean;
+   city: string;
+   category: string;
+   totalBookings?: number;
+   completedBookings?: number;
+   activeRequests?: number;
+   totalEarnings?: number;
+   completionRate?: number;
+   rating?: number;
+   reviews?: number;
+   dailyEarnings?: number;
+   weeklyEarnings?: number;
 };
 
 export default function OwnerDashboardHome() {
@@ -92,9 +99,9 @@ export default function OwnerDashboardHome() {
            <div className="relative z-10 flex flex-col h-full justify-between">
               <div>
                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Revenue Estimate</p>
-                 <h2 className="text-6xl font-black mt-4 italic">₹0.00</h2>
+                 <h2 className="text-6xl font-black mt-4 italic">₹{(biz?.totalEarnings ?? 0).toFixed(2)}</h2>
                  <p className="text-xs font-bold text-white/60 mt-2 flex items-center gap-2">
-                    <TrendingUp size={14} className="text-emerald-400" /> 
+                 <TrendingUp size={14} className="text-emerald-400" /> 
                     Calculated from completed bookings
                  </p>
               </div>
@@ -136,10 +143,75 @@ export default function OwnerDashboardHome() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-         <MetricBox label="Active Requests" value="0" icon={<Clock size={20} />} active />
-         <MetricBox label="Total Bookings" value="0" icon={<Briefcase size={20} />} />
-         <MetricBox label="Customer Rating" value="5.0" icon={<Star size={20} />} />
+         <MetricBox label="Active Requests"value={String(biz?.activeRequests ?? 0)}icon={<Clock size={20} />}active/>
+         <MetricBox label="Total Bookings"value={String(biz?.totalBookings ?? 0)}icon={<Briefcase size={20} />}/>
+         <div className="rounded-2xl border border-gray-100 bg-white p-5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+               Customer Rating
+            </p>
+            <div className="mt-3 flex items-end gap-2">
+               <span className="text-3xl font-black text-navy">
+                  {biz?.rating !== undefined ? biz.rating.toFixed(1) : "0.0"}
+               </span>
+               <span className="mb-1 text-sm text-gray-400">/ 5</span>
+            </div>
+            <div className="mt-2 flex items-center gap-2 text-xs font-bold text-gray-500">
+               <Star size={14} />
+               {biz?.reviews ?? 0} reviews
+            </div>
+            </div>
          <MetricBox label="Followers" value="0" icon={<Users size={20} />} />
+      </div>
+      <div className="rounded-[3rem] border-2 border-gray-50 bg-white p-10 shadow-sm">
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
+                  Performance
+               </p>
+               <h2 className="text-2xl font-black text-navy mt-2">
+                  Service Performance
+               </h2>
+               <p className="text-xs font-medium text-gray-400 mt-1">
+                  Overview of your completed service jobs.
+               </p>
+            </div>
+
+            <div className="text-right">
+               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                  Completion Rate
+               </p>
+               <p className="text-4xl font-black text-navy mt-1">
+                  {biz?.completionRate ?? 0}%
+               </p>
+            </div>
+         </div>
+
+         <div className="grid gap-4 md:grid-cols-3 mt-8">
+            <PerformanceStat
+               label="Completed Jobs"
+               value={String(biz?.completedBookings ?? 0)}
+            />
+
+            <PerformanceStat
+               label="Daily Earnings"
+               value={`₹${(biz?.dailyEarnings ?? 0).toFixed(2)}`}
+            />
+
+            <PerformanceStat
+            label="Weekly Earnings"
+            value={`₹${(biz?.weeklyEarnings ?? 0).toFixed(2)}`}
+            />
+
+            <PerformanceStat
+               label="Total Jobs"
+               value={String(biz?.totalBookings ?? 0)}
+            />
+
+            <PerformanceStat
+               label="Active Requests"
+               value={String(biz?.activeRequests ?? 0)}
+            />
+         </div>
       </div>
 
       {/* Quick Actions */}
@@ -176,6 +248,17 @@ function MetricBox({ label, value, icon, active = false }: { label: string; valu
        </div>
        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{label}</p>
        <h4 className="text-3xl font-black text-navy">{value}</h4>
+    </div>
+  );
+}
+
+function PerformanceStat({label,value,}: {label: string; value: string;}) {
+  return (
+    <div className="rounded-2xl bg-gray-50 p-6">
+      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+        {label}
+      </p>
+      <p className="text-3xl font-black text-navy mt-2">{value}</p>
     </div>
   );
 }

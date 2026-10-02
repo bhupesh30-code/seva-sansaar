@@ -6,13 +6,21 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '@/lib/firebase/admin';
-import { requireAuth } from '@/lib/auth-helpers';
+import { verifyToken } from '@/lib/auth-helpers';
+import { parseOwnerAuth } from '@/lib/server/ownerAuth';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAuth(req);
+    const firebaseUser = await verifyToken(req);
+    const ownerAuth = parseOwnerAuth(req);
 
+    if (!firebaseUser && !ownerAuth) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
     const formData = await req.formData();
     const file     = formData.get('file') as File | null;
 

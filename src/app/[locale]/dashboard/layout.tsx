@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  ShieldCheck,
   Store,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -17,6 +18,7 @@ import { clearOwnerSession, readOwnerSession } from "@/lib/ownerClient";
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Onboarding / KYC", href: "/dashboard/onboarding", icon: ShieldCheck },
   { name: "My listing", href: "/dashboard/listing", icon: Store },
   { name: "Bookings", href: "/dashboard/bookings", icon: ClipboardList },
   { name: "Availability", href: "/dashboard/calendar", icon: Calendar },
