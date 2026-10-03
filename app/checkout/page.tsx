@@ -77,15 +77,12 @@ export default function CheckoutPage() {
         return;
       }
 
-      // DEMO PAYMENT
-      // No real money is charged.
       await new Promise((resolve) =>
         setTimeout(resolve, 1500)
       );
 
       const firstItem = cart[0];
 
-      // STEP 1: Create booking
       const { data: booking, error: bookingError } =
         await supabase
           .from("bookings")
@@ -118,11 +115,9 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Unique demo transaction reference
       const transactionReference =
         "DEMO_TXN_" + Date.now();
 
-      // STEP 2: Save transaction in Supabase
       const { error: transactionError } =
         await supabase
           .from("transactions")
@@ -136,7 +131,6 @@ export default function CheckoutPage() {
               transactionReference,
           });
 
-      // If transaction fails, cancel the booking
       if (transactionError) {
         console.error(
           "TRANSACTION ERROR:",
@@ -158,7 +152,6 @@ export default function CheckoutPage() {
         return;
       }
 
-      // STEP 3: Also save last transaction locally
       const demoTransaction = {
         transactionId: transactionReference,
         bookingId: booking.id,
@@ -176,10 +169,8 @@ export default function CheckoutPage() {
         JSON.stringify(demoTransaction)
       );
 
-      // STEP 4: Clear cart
       localStorage.removeItem("sevaSansaarCart");
 
-      // STEP 5: Success message
       alert(
         `Demo Payment Successful!\n\n` +
           `Amount Paid: ₹${total}\n` +
@@ -187,7 +178,6 @@ export default function CheckoutPage() {
           `Transaction ID: ${transactionReference}`
       );
 
-      // STEP 6: Go to bookings
       router.push("/my-bookings");
       router.refresh();
     } catch (error) {
@@ -200,16 +190,29 @@ export default function CheckoutPage() {
 
   if (cart.length === 0) {
     return (
-      <main style={pageStyle}>
-        <div style={containerStyle}>
-          <div style={emptyStyle}>
-            <h2>Your cart is empty</h2>
+      <main style={styles.page}>
+        <div style={styles.emptyWrapper}>
+          <div style={styles.emptyCard}>
+            <div style={styles.emptyIcon}>🛒</div>
+
+            <div style={styles.badge}>
+              CHECKOUT
+            </div>
+
+            <h1 style={styles.emptyTitle}>
+              Your cart is empty
+            </h1>
+
+            <p style={styles.emptyText}>
+              Add a service to your cart before
+              continuing to checkout.
+            </p>
 
             <button
               onClick={() => router.push("/dashboard")}
-              style={primaryButton}
+              style={styles.primaryButton}
             >
-              Browse Services
+              Browse Services →
             </button>
           </div>
         </div>
@@ -218,146 +221,218 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main style={pageStyle}>
-      <div style={containerStyle}>
-        <div style={headerStyle}>
-          <div>
-            <h1 style={{ margin: 0 }}>
-              Seva Sansaar
-            </h1>
+    <main style={styles.page}>
+      <header style={styles.header}>
+        <button
+          onClick={() => router.push("/")}
+          style={styles.logo}
+        >
+          Seva<span>Sansaar</span>
+        </button>
 
-            <p style={{ marginBottom: 0 }}>
-              Secure Checkout
-            </p>
+        <button
+          onClick={() => router.push("/cart")}
+          style={styles.backButton}
+        >
+          ← Back to Cart
+        </button>
+      </header>
+
+      <div style={styles.container}>
+        <div style={styles.heading}>
+          <div style={styles.badge}>
+            SECURE CHECKOUT
           </div>
 
-          <button
-            onClick={() => router.push("/cart")}
-            style={backButton}
-          >
-            ← Back to Cart
-          </button>
+          <h1 style={styles.headingTitle}>
+            Complete your booking
+          </h1>
+
+          <p style={styles.headingText}>
+            Enter your details and review your services
+            before confirming your booking.
+          </p>
         </div>
 
-        <div style={gridStyle}>
+        <div style={styles.securityBar}>
+          <span>🔒 Secure</span>
+          <span>•</span>
+          <span>✓ Verified booking</span>
+          <span>•</span>
+          <span>🏛️ Seva Sansaar</span>
+        </div>
+
+        <div style={styles.grid}>
           {/* CUSTOMER DETAILS */}
 
-          <section style={cardStyle}>
-            <h2>Customer Details</h2>
+          <section style={styles.card}>
+            <div style={styles.cardHeader}>
+              <div style={styles.cardNumber}>
+                01
+              </div>
 
-            <label style={labelStyle}>
+              <div>
+                <h2 style={styles.cardTitle}>
+                  Customer details
+                </h2>
+
+                <p style={styles.cardSubtitle}>
+                  Where should we send your booking
+                  information?
+                </p>
+              </div>
+            </div>
+
+            <label
+              htmlFor="checkout-name"
+              style={styles.label}
+            >
               Full Name
             </label>
 
             <input
+              id="checkout-name"
               type="text"
               placeholder="Enter your full name"
               value={name}
               onChange={(e) =>
                 setName(e.target.value)
               }
-              style={inputStyle}
+              autoComplete="name"
+              style={styles.input}
             />
 
-            <label style={labelStyle}>
+            <label
+              htmlFor="checkout-email"
+              style={styles.label}
+            >
               Email Address
             </label>
 
             <input
+              id="checkout-email"
               type="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) =>
                 setEmail(e.target.value)
               }
-              style={inputStyle}
+              autoComplete="email"
+              style={styles.input}
             />
 
-            <label style={labelStyle}>
+            <label
+              htmlFor="checkout-phone"
+              style={styles.label}
+            >
               Phone Number
             </label>
 
             <input
+              id="checkout-phone"
               type="tel"
               placeholder="10-digit mobile number"
               value={phone}
               onChange={(e) =>
                 setPhone(
-                  e.target.value.replace(/\D/g, "")
+                  e.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 10)
                 )
               }
               maxLength={10}
-              style={inputStyle}
+              inputMode="numeric"
+              autoComplete="tel"
+              style={styles.input}
             />
 
-            <div style={demoBox}>
-              🧪 DEMO PAYMENT MODE
-              <br />
-              No real money will be charged.
+            <div style={styles.demoBox}>
+              <div style={styles.demoIcon}>
+                🧪
+              </div>
+
+              <div>
+                <strong>Demo Payment Mode</strong>
+
+                <p>
+                  No real money will be charged.
+                  This is a test checkout.
+                </p>
+              </div>
             </div>
           </section>
 
           {/* ORDER SUMMARY */}
 
-          <section style={cardStyle}>
-            <h2>Order Summary</h2>
-
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                style={itemStyle}
-              >
-                <div>
-                  <h3 style={{ margin: "0 0 5px" }}>
-                    {item.name}
-                  </h3>
-
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "#6b7280",
-                    }}
-                  >
-                    ₹{Number(item.price)} ×{" "}
-                    {item.quantity}
-                  </p>
-                </div>
-
-                <strong>
-                  ₹
-                  {Number(item.price) *
-                    item.quantity}
-                </strong>
+          <section style={styles.card}>
+            <div style={styles.cardHeader}>
+              <div style={styles.cardNumber}>
+                02
               </div>
-            ))}
 
-            <hr
-              style={{
-                margin: "20px 0",
-                border: "none",
-                borderTop:
-                  "1px solid #e5e7eb",
-              }}
-            />
+              <div>
+                <h2 style={styles.cardTitle}>
+                  Order summary
+                </h2>
 
-            <div style={summaryRow}>
+                <p style={styles.cardSubtitle}>
+                  Review your selected services.
+                </p>
+              </div>
+            </div>
+
+            <div style={styles.items}>
+              {cart.map((item) => (
+                <div
+                  key={item.id}
+                  style={styles.item}
+                >
+                  <div style={styles.itemIcon}>
+                    🏠
+                  </div>
+
+                  <div style={styles.itemContent}>
+                    <h3 style={styles.itemName}>
+                      {item.name}
+                    </h3>
+
+                    <p style={styles.itemDescription}>
+                      {item.description ||
+                        "Professional home service"}
+                    </p>
+
+                    <span style={styles.quantity}>
+                      Qty: {item.quantity}
+                    </span>
+                  </div>
+
+                  <strong style={styles.itemPrice}>
+                    ₹
+                    {Number(item.price) *
+                      item.quantity}
+                  </strong>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.divider} />
+
+            <div style={styles.summaryRow}>
               <span>Subtotal</span>
               <strong>₹{subtotal}</strong>
             </div>
 
-            <div style={summaryRow}>
+            <div style={styles.summaryRow}>
               <span>Service Fee</span>
               <strong>₹{serviceFee}</strong>
             </div>
 
-            <div
-              style={{
-                ...summaryRow,
-                fontSize: "20px",
-                marginTop: "15px",
-              }}
-            >
-              <strong>Total</strong>
+            <div style={styles.totalRow}>
+              <div>
+                <span>Total amount</span>
+                <small>Including service fee</small>
+              </div>
+
               <strong>₹{total}</strong>
             </div>
 
@@ -365,151 +440,367 @@ export default function CheckoutPage() {
               onClick={handleDemoPayment}
               disabled={loading}
               style={{
-                ...paymentButton,
-                opacity: loading ? 0.6 : 1,
+                ...styles.paymentButton,
+                ...(loading
+                  ? styles.disabledButton
+                  : {}),
               }}
             >
               {loading
-                ? "Processing Demo Payment..."
+                ? "Processing payment..."
                 : `🧪 Pay ₹${total} (Demo)`}
             </button>
 
-            <p style={paymentNote}>
-              Test payment • No real money
+            <p style={styles.paymentNote}>
+              Demo transaction • No real money
             </p>
           </section>
+        </div>
+
+        <div style={styles.bottomNote}>
+          <span>🔐 Your information is handled securely.</span>
         </div>
       </div>
     </main>
   );
 }
 
-/* STYLES */
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: "100vh",
+    background:
+      "linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%)",
+    color: "#172033",
+    fontFamily: "Arial, Helvetica, sans-serif",
+    paddingBottom: "50px",
+  },
 
-const pageStyle = {
-  minHeight: "100vh",
-  background: "#f5f7fb",
-  padding: "30px 20px",
-  fontFamily:
-    "Arial, Helvetica, sans-serif",
-};
+  header: {
+    minHeight: "72px",
+    padding: "12px 6%",
+    background: "rgba(255,255,255,0.96)",
+    borderBottom: "1px solid #e5eaf1",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "15px",
+    position: "sticky",
+    top: 0,
+    zIndex: 10,
+    backdropFilter: "blur(12px)",
+  },
 
-const containerStyle = {
-  maxWidth: "1100px",
-  margin: "0 auto",
-};
+  logo: {
+    border: "none",
+    background: "transparent",
+    color: "#123b78",
+    fontSize: "25px",
+    fontWeight: 900,
+    cursor: "pointer",
+    letterSpacing: "-0.5px",
+  },
 
-const headerStyle = {
-  background: "#111827",
-  color: "white",
-  padding: "25px",
-  borderRadius: "14px",
-  marginBottom: "25px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: "15px",
-  flexWrap: "wrap" as const,
-};
+  logoSpan: {
+    color: "#1769e0",
+  },
 
-const gridStyle = {
-  display: "grid",
-  gridTemplateColumns:
-    "repeat(auto-fit,minmax(320px,1fr))",
-  gap: "20px",
-};
+  backButton: {
+    padding: "10px 16px",
+    border: "1px solid #d7dee8",
+    borderRadius: "10px",
+    background: "#ffffff",
+    color: "#334155",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
 
-const cardStyle = {
-  background: "white",
-  padding: "25px",
-  borderRadius: "14px",
-  border: "1px solid #e5e7eb",
-};
+  container: {
+    maxWidth: "1120px",
+    margin: "45px auto",
+    padding: "0 20px",
+  },
 
-const labelStyle = {
-  display: "block",
-  marginTop: "18px",
-  marginBottom: "8px",
-  fontWeight: "600",
-};
+  heading: {
+    marginBottom: "20px",
+  },
 
-const inputStyle = {
-  width: "100%",
-  boxSizing: "border-box" as const,
-  padding: "13px",
-  border: "1px solid #d1d5db",
-  borderRadius: "8px",
-  fontSize: "15px",
-};
+  badge: {
+    display: "inline-block",
+    padding: "7px 11px",
+    borderRadius: "20px",
+    background: "#eaf2ff",
+    color: "#1769e0",
+    fontSize: "11px",
+    fontWeight: 900,
+    letterSpacing: "1px",
+  },
 
-const itemStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: "15px",
-  padding: "12px 0",
-  borderBottom:
-    "1px solid #f0f0f0",
-};
+  headingTitle: {
+    fontSize: "40px",
+    lineHeight: 1.15,
+    margin: "14px 0 8px",
+    letterSpacing: "-1px",
+  },
 
-const summaryRow = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginTop: "10px",
-};
+  headingText: {
+    margin: 0,
+    color: "#64748b",
+    lineHeight: 1.6,
+    fontSize: "15px",
+  },
 
-const paymentButton = {
-  width: "100%",
-  marginTop: "25px",
-  padding: "14px",
-  border: "none",
-  borderRadius: "9px",
-  background: "#16a34a",
-  color: "white",
-  fontSize: "16px",
-  fontWeight: "700",
-  cursor: "pointer",
-};
+  securityBar: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    alignItems: "center",
+    marginBottom: "28px",
+    color: "#64748b",
+    fontSize: "12px",
+    fontWeight: 700,
+  },
 
-const backButton = {
-  padding: "10px 16px",
-  border: "none",
-  borderRadius: "8px",
-  background: "#374151",
-  color: "white",
-  fontWeight: "600",
-  cursor: "pointer",
-};
+  grid: {
+    display: "grid",
+    gridTemplateColumns:
+      "minmax(0, 1.1fr) minmax(340px, 0.9fr)",
+    gap: "22px",
+    alignItems: "start",
+  },
 
-const primaryButton = {
-  padding: "12px 20px",
-  border: "none",
-  borderRadius: "8px",
-  background: "#2563eb",
-  color: "white",
-  fontWeight: "600",
-  cursor: "pointer",
-};
+  card: {
+    background: "#ffffff",
+    padding: "30px",
+    borderRadius: "22px",
+    border: "1px solid #e2e8f0",
+    boxShadow: "0 18px 45px rgba(15,23,42,0.06)",
+  },
 
-const demoBox = {
-  marginTop: "20px",
-  padding: "14px",
-  borderRadius: "8px",
-  background: "#fef3c7",
-  color: "#92400e",
-  fontWeight: "600",
-  fontSize: "14px",
-};
+  cardHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+    marginBottom: "25px",
+  },
 
-const paymentNote = {
-  textAlign: "center" as const,
-  color: "#6b7280",
-  fontSize: "13px",
-};
+  cardNumber: {
+    width: "44px",
+    height: "44px",
+    minWidth: "44px",
+    borderRadius: "13px",
+    background: "#eaf2ff",
+    color: "#1769e0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "13px",
+    fontWeight: 900,
+  },
 
-const emptyStyle = {
-  background: "white",
-  padding: "50px",
-  borderRadius: "14px",
-  textAlign: "center" as const,
+  cardTitle: {
+    margin: 0,
+    fontSize: "22px",
+    letterSpacing: "-0.3px",
+  },
+
+  cardSubtitle: {
+    margin: "5px 0 0",
+    color: "#64748b",
+    fontSize: "13px",
+  },
+
+  label: {
+    display: "block",
+    marginTop: "18px",
+    marginBottom: "8px",
+    fontWeight: 800,
+    fontSize: "14px",
+    color: "#334155",
+  },
+
+  input: {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "14px 15px",
+    border: "1px solid #d5dde8",
+    borderRadius: "11px",
+    fontSize: "15px",
+    outline: "none",
+    background: "#fbfdff",
+  },
+
+  demoBox: {
+    marginTop: "22px",
+    padding: "15px",
+    borderRadius: "13px",
+    background: "#fffbeb",
+    border: "1px solid #fde68a",
+    color: "#92400e",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "12px",
+  },
+
+  demoIcon: {
+    fontSize: "22px",
+  },
+
+  items: {
+    display: "grid",
+    gap: "5px",
+  },
+
+  item: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "13px 0",
+    borderBottom: "1px solid #f1f5f9",
+  },
+
+  itemIcon: {
+    width: "42px",
+    height: "42px",
+    minWidth: "42px",
+    borderRadius: "11px",
+    background: "#f1f5f9",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "19px",
+  },
+
+  itemContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  itemName: {
+    margin: 0,
+    fontSize: "15px",
+  },
+
+  itemDescription: {
+    margin: "4px 0",
+    color: "#64748b",
+    fontSize: "12px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+
+  quantity: {
+    color: "#94a3b8",
+    fontSize: "12px",
+    fontWeight: 700,
+  },
+
+  itemPrice: {
+    whiteSpace: "nowrap",
+    fontSize: "15px",
+  },
+
+  divider: {
+    height: "1px",
+    background: "#e5eaf1",
+    margin: "20px 0",
+  },
+
+  summaryRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: "11px",
+    color: "#64748b",
+    fontSize: "14px",
+  },
+
+  totalRow: {
+    marginTop: "20px",
+    paddingTop: "18px",
+    borderTop: "1px solid #e5eaf1",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "15px",
+  },
+
+  paymentButton: {
+    width: "100%",
+    marginTop: "25px",
+    padding: "15px",
+    border: "none",
+    borderRadius: "12px",
+    background: "#16a34a",
+    color: "#ffffff",
+    fontSize: "16px",
+    fontWeight: 800,
+    cursor: "pointer",
+    boxShadow: "0 8px 20px rgba(22,163,74,0.2)",
+  },
+
+  disabledButton: {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
+
+  paymentNote: {
+    textAlign: "center",
+    color: "#94a3b8",
+    fontSize: "12px",
+    margin: "10px 0 0",
+  },
+
+  bottomNote: {
+    textAlign: "center",
+    marginTop: "25px",
+    color: "#94a3b8",
+    fontSize: "12px",
+    fontWeight: 700,
+  },
+
+  primaryButton: {
+    marginTop: "18px",
+    padding: "13px 20px",
+    border: "none",
+    borderRadius: "11px",
+    background: "#1769e0",
+    color: "#ffffff",
+    fontWeight: 800,
+    cursor: "pointer",
+  },
+
+  emptyWrapper: {
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "30px 20px",
+  },
+
+  emptyCard: {
+    width: "100%",
+    maxWidth: "500px",
+    padding: "45px 30px",
+    background: "#ffffff",
+    borderRadius: "24px",
+    border: "1px solid #e2e8f0",
+    textAlign: "center",
+    boxShadow: "0 20px 50px rgba(15,23,42,0.07)",
+  },
+
+  emptyIcon: {
+    fontSize: "48px",
+    marginBottom: "15px",
+  },
+
+  emptyTitle: {
+    margin: "15px 0 8px",
+    fontSize: "28px",
+  },
+
+  emptyText: {
+    color: "#64748b",
+    lineHeight: 1.6,
+  },
 };

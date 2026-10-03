@@ -13,225 +13,219 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async (
-    e: React.FormEvent
-  ) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
 
-    if (!email.trim() || !password) {
-      setError(
-        "Please enter email and password."
-      );
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail) {
+      setError("Please enter your email.");
+      return;
+    }
+
+    if (!password) {
+      setError("Please enter your password.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const {
-        data,
-        error: loginError,
-      } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { data, error: loginError } =
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
 
       if (loginError) {
-        throw loginError;
+        setError(loginError.message);
+        return;
       }
 
-      if (!data.session || !data.user) {
-        throw new Error(
-          "Login session could not be created."
-        );
+      if (!data.user || !data.session) {
+        setError("Login session could not be created.");
+        return;
       }
 
-      console.log(
-        "LOGIN SUCCESS:",
-        data.user.email
-      );
-
-      console.log(
-        "SESSION CREATED:",
-        !!data.session
-      );
-
-      // Make sure session is available
-      const {
-        data: sessionData,
-      } = await supabase.auth.getSession();
-
-      console.log(
-        "CURRENT SESSION:",
-        !!sessionData.session
-      );
-
-      if (!sessionData.session) {
-        throw new Error(
-          "Supabase session was not saved."
-        );
-      }
-
-      router.push("/admin");
+      router.push("/dashboard");
       router.refresh();
-    } catch (err: any) {
-      console.error(
-        "LOGIN ERROR:",
-        err
-      );
-
-      setError(
-        err?.message ||
-          "Login failed. Please try again."
-      );
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#f3f4f6",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          background: "white",
-          padding: "30px",
-          borderRadius: "16px",
-          boxShadow:
-            "0 10px 30px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h1
-          style={{
-            marginTop: 0,
-            marginBottom: "8px",
-          }}
-        >
-          Seva Sansaar
-        </h1>
+    <main className="min-h-screen bg-slate-50">
+      <div className="grid min-h-screen lg:grid-cols-2">
 
-        <p
-          style={{
-            color: "#6b7280",
-            marginBottom: "25px",
-          }}
-        >
-          Login to your account
-        </p>
+        {/* LEFT BRANDING */}
+        <section className="hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
+          <div>
+            <button
+              onClick={() => router.push("/")}
+              className="text-2xl font-extrabold"
+            >
+              Seva <span className="text-blue-400">Sansaar</span>
+            </button>
 
-        {error && (
-          <div
-            style={{
-              background: "#fee2e2",
-              color: "#991b1b",
-              border:
-                "1px solid #fecaca",
-              padding: "12px",
-              borderRadius: "8px",
-              marginBottom: "15px",
-            }}
-          >
-            {error}
+            <div className="mt-24 max-w-lg">
+              <div className="mb-5 inline-flex rounded-full border border-blue-400/30 bg-blue-400/10 px-4 py-2 text-sm text-blue-300">
+                Welcome Back
+              </div>
+
+              <h1 className="text-5xl font-extrabold leading-tight">
+                Your services.
+                <br />
+                <span className="text-blue-400">
+                  One simple dashboard.
+                </span>
+              </h1>
+
+              <p className="mt-6 text-lg leading-8 text-slate-300">
+                Login to Seva Sansaar and manage your services,
+                bookings and applications from one secure place.
+              </p>
+            </div>
           </div>
-        )}
 
-        <form onSubmit={handleLogin}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "6px",
-              fontWeight: "600",
-            }}
-          >
-            Email
-          </label>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-2xl">🔐</div>
+              <div className="mt-2 text-sm text-slate-300">
+                Secure Login
+              </div>
+            </div>
 
-          <input
-            type="email"
-            value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-            placeholder="Enter your email"
-            autoComplete="email"
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              padding: "12px",
-              borderRadius: "8px",
-              border:
-                "1px solid #d1d5db",
-              marginBottom: "16px",
-              fontSize: "15px",
-            }}
-          />
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-2xl">📋</div>
+              <div className="mt-2 text-sm text-slate-300">
+                Easy Tracking
+              </div>
+            </div>
 
-          <label
-            style={{
-              display: "block",
-              marginBottom: "6px",
-              fontWeight: "600",
-            }}
-          >
-            Password
-          </label>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-2xl">⚡</div>
+              <div className="mt-2 text-sm text-slate-300">
+                Fast Services
+              </div>
+            </div>
+          </div>
+        </section>
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              padding: "12px",
-              borderRadius: "8px",
-              border:
-                "1px solid #d1d5db",
-              marginBottom: "20px",
-              fontSize: "15px",
-            }}
-          />
+        {/* RIGHT LOGIN */}
+        <section className="flex items-center justify-center px-5 py-10 sm:px-8">
+          <div className="w-full max-w-md">
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "13px",
-              border: "none",
-              borderRadius: "8px",
-              background: loading
-                ? "#9ca3af"
-                : "#2563eb",
-              color: "white",
-              fontSize: "16px",
-              fontWeight: "600",
-              cursor: loading
-                ? "not-allowed"
-                : "pointer",
-            }}
-          >
-            {loading
-              ? "Logging in..."
-              : "Login"}
-          </button>
-        </form>
+            {/* MOBILE LOGO */}
+            <div className="mb-8 text-center lg:hidden">
+              <button
+                onClick={() => router.push("/")}
+                className="text-2xl font-extrabold text-slate-900"
+              >
+                Seva <span className="text-blue-600">Sansaar</span>
+              </button>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 sm:p-8">
+
+              <div className="mb-8">
+                <p className="mb-2 text-sm font-semibold text-blue-600">
+                  WELCOME BACK
+                </p>
+
+                <h2 className="text-3xl font-extrabold text-slate-900">
+                  Login to your account
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Access your Seva Sansaar dashboard and manage
+                  your services.
+                </p>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-5">
+
+                {/* EMAIL */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
+                    Email Address
+                  </label>
+
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3.5 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                {/* PASSWORD */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
+                    Password
+                  </label>
+
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3.5 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                {/* ERROR */}
+                {error && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+                    {error}
+                  </div>
+                )}
+
+                {/* LOGIN BUTTON */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-xl bg-blue-600 px-5 py-3.5 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? "Signing In..." : "Login"}
+                </button>
+              </form>
+
+              {/* SIGNUP */}
+              <div className="mt-7 text-center text-sm text-slate-600">
+                Don&apos;t have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => router.push("/signup")}
+                  className="font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                >
+                  Create Account
+                </button>
+              </div>
+
+              {/* HOME */}
+              <button
+                type="button"
+                onClick={() => router.push("/")}
+                className="mt-4 w-full text-center text-sm font-medium text-slate-500 transition hover:text-blue-600"
+              >
+                ← Back to Home
+              </button>
+            </div>
+
+            <p className="mt-6 text-center text-xs text-slate-400">
+              Secure authentication powered by Seva Sansaar
+            </p>
+          </div>
+        </section>
       </div>
     </main>
   );

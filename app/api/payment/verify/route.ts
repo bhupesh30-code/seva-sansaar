@@ -2,102 +2,149 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+export const runtime = "nodejs";
+
+let prisma: PrismaClient | undefined;
+
+function getPrisma() {
+if (!prisma) {
+prisma = new PrismaClient();
+}
+
+return prisma;
+}
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
+try {
+const body = await req.json();
 
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = body;
+const razorpayOrderId = String(
+  body.razorpay_order_id ?? ""
+).trim();
 
-    const bookingId = Number(body.bookingId);
+const razorpayPaymentId = String(
+  body.razorpay_payment_id ?? ""
+).trim();
 
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature ||
-      !bookingId ||
-      Number.isNaN(bookingId)
-    ) {
-      return NextResponse.json(
-        { error: "Payment details are missing" },
-        { status: 400 }
-      );
-    }
+const razorpaySignature = String(
+  body.razorpay_signature ?? ""
+).trim();
 
-    const secret = process.env.RAZORPAY_KEY_SECRET;
+const bookingId = String(
+  body.bookingId ?? ""
+).trim();
 
-    if (!secret) {
-      return NextResponse.json(
-        { error: "Razorpay secret is not configured" },
-        { status: 500 }
-      );
-    }
+if (
+  !razorpayOrderId ||
+  !razorpayPaymentId ||
+  !razorpaySignature ||
+  !bookingId
+) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Payment details are missing",
+    },
+    { status: 400 }
+  );
+}
 
-    const generatedSignature = crypto
-      .createHmac("sha256", secret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest("hex");
+const secret = process.env.RAZORPAY_KEY_SECRET;
 
-    if (generatedSignature !== razorpay_signature) {
-      return NextResponse.json(
-        { error: "Invalid payment signature" },
-        { status: 400 }
-      );
-    }
+if (!secret) {
+  console.error(
+    "RAZORPAY_KEY_SECRET is not configured."
+  );
 
-    const booking = await prisma.booking.findUnique({
-      where: {
-        id: bookingId,
-      },
-    });
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Razorpay secret is not configured",
+    },
+    { status: 500 }
+  );
+}
 
-    if (!booking) {
-      return NextResponse.json(
-        { error: "Booking not found" },
-        { status: 404 }
-      );
-    }
+const generatedSignature = crypto
+  .createHmac("sha256", secret)
+  .update(
+    `${razorpayOrderId}|${razorpayPaymentId}`
+  )
+  .digest("hex");
 
-    const transaction = await prisma.transaction.update({
-      where: {
-        bookingId: bookingId,
-      },
-      data: {
-        razorpayPaymentId: razorpay_payment_id,
-        status: "PAID",
-      },
-    });
+if (generatedSignature !== razorpaySignature) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Invalid payment signature",
+    },
+    { status: 400 }
+  );
+}
 
-    await prisma.booking.update({
-      where: {
-        id: bookingId,
-      },
-      data: {
-        paymentStatus: "PAID",
-        status: "CONFIRMED",
-      },
-    });
+const db = getPrisma();
 
-    return NextResponse.json({
-      success: true,
-      transaction,
-      message: "Payment verified successfully",
-    });
-  } catch (error) {
-    console.error("Payment verification error:", error);
+const booking = await db.booking.findUnique({
+  where: {
+    id: bookingId,
+  },
+});
 
-    return NextResponse.json(
-      {
-        error: "Payment verification failed",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
+if (!booking) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Booking not found",
+    },
+    { status: 404 }
+  );
+}
+
+const transaction =
+  await db.transaction.update({
+    where: {
+      bookingId: bookingId,
+    },
+    data: {
+      razorpayPaymentId: razorpayPaymentId,
+      status: "PAID",
+    },
+  });
+
+await db.booking.update({
+  where: {
+    id: bookingId,
+  },
+  data: {
+    paymentStatus: "PAID",
+    status: "CONFIRMED",
+  },
+});
+
+return NextResponse.json({
+  success: true,
+  transaction,
+  message: "Payment verified successfully",
+});
+
+} catch (error: unknown) {
+console.error(
+"Payment verification error:",
+error
+);
+
+const message =
+  error instanceof Error
+    ? error.message
+    : "Payment verification failed";
+
+return NextResponse.json(
+  {
+    success: false,
+    error: message,
+  },
+  { status: 500 }
+);
+
+}
 }

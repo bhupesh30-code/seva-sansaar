@@ -1,320 +1,369 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "../../lib/supabase";
 
-export default function IncomeCertificate() {
-  const [name, setName] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [occupation, setOccupation] = useState("");
-  const [annualIncome, setAnnualIncome] = useState("");
-  const [address, setAddress] = useState("");
+const documents = [
+  "Identity Proof",
+  "Address Proof",
+  "Income-related Documents",
+  "Registered Mobile Number",
+];
 
-  const [submitted, setSubmitted] = useState(false);
-  const [applicationId, setApplicationId] = useState("");
-  const [loading, setLoading] = useState(false);
+const steps = [
+  {
+    number: "01",
+    title: "Choose your service",
+    text: "Review the income certificate service information and requirements.",
+  },
+  {
+    number: "02",
+    title: "Prepare documents",
+    text: "Keep your identity, address and relevant income documents ready.",
+  },
+  {
+    number: "03",
+    title: "Submit your request",
+    text: "Complete the required information and submit your service request.",
+  },
+  {
+    number: "04",
+    title: "Track your request",
+    text: "Use your application reference to check the latest status.",
+  },
+];
 
-  const [checked, setChecked] = useState([
-    false,
-    false,
-    false,
-    false,
-  ]);
+const faqs = [
+  {
+    q: "What is an income certificate?",
+    a: "An income certificate is an official document used to verify income details for eligible government or other services.",
+  },
+  {
+    q: "Which documents should I keep ready?",
+    a: "Keep identity, address and relevant income-related documents available. Exact requirements can vary depending on the authority and service.",
+  },
+  {
+    q: "Can I track my application?",
+    a: "Yes. After submitting your request through Seva Sansaar, you can use your application reference to check its status.",
+  },
+];
 
-  const documents = [
-    "Aadhaar Card",
-    "Address Proof",
-    "Income Proof",
-    "Passport Size Photo",
-  ];
+export default function IncomePage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const completed = checked.filter(Boolean).length;
-  const progress = (completed / documents.length) * 100;
+  return (
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+          <a href="/" className="text-2xl font-black tracking-tight">
+            Seva<span className="text-blue-600">Sansaar</span>
+          </a>
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+          <nav className="hidden items-center gap-8 text-sm font-semibold md:flex">
+            <a href="/" className="text-slate-600 hover:text-blue-600">
+              Home
+            </a>
 
-    if (!name || !mobile || !occupation || !annualIncome || !address) {
-      alert("Please fill all fields.");
-      return;
-    }
-
-    if (!/^[0-9]{10}$/.test(mobile)) {
-      alert("Please enter a valid 10-digit mobile number.");
-      return;
-    }
-
-    setLoading(true);
-
-    const newApplicationId = `SS-${Date.now()
-      .toString()
-      .slice(-6)}`;
-
-    const { error } = await supabase
-      .from("applications")
-      .insert({
-        application_id: newApplicationId,
-        service: "Income Certificate",
-        status: "Submitted",
-      });
-
-    setLoading(false);
-
-    if (error) {
-      console.error(error);
-      alert("Application save failed. Please try again.");
-      return;
-    }
-
-    setApplicationId(newApplicationId);
-    setSubmitted(true);
-  };
-
-  if (submitted) {
-    return (
-      <main className="min-h-screen bg-slate-100 px-6 py-10">
-
-        <div className="mx-auto max-w-2xl rounded-2xl bg-white p-8 text-center shadow-lg">
-
-          <div className="text-5xl">✅</div>
-
-          <h1 className="mt-4 text-3xl font-bold text-green-700">
-            Application Submitted
-          </h1>
-
-          <p className="mt-3 text-gray-600">
-            Your Income Certificate application has been saved.
-          </p>
-
-          <div className="mt-6 rounded-xl bg-blue-50 p-5">
-            <p className="text-sm text-gray-600">
-              Application ID
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-blue-700">
-              {applicationId}
-            </p>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-
-            <button
-              onClick={() => window.print()}
-              className="rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800"
-            >
-              Print Application
-            </button>
+            <a href="/services/income" className="text-blue-600">
+              Services
+            </a>
 
             <a
               href="/dashboard"
-              className="rounded-lg border border-blue-700 px-5 py-3 font-semibold text-blue-700 hover:bg-blue-50"
+              className="text-slate-600 hover:text-blue-600"
             >
-              Go to Dashboard
+              My Applications
             </a>
+          </nav>
 
-          </div>
-
-        </div>
-
-      </main>
-    );
-  }
-
-  return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10">
-
-      <div className="mx-auto max-w-4xl">
-
-        {/* Header */}
-        <div className="rounded-2xl bg-blue-700 p-8 text-white shadow-lg">
-
-          <p className="text-sm font-semibold text-blue-100">
-            SEVA SANSAAR • SERVICE 04
-          </p>
-
-          <h1 className="mt-2 text-3xl font-bold">
-            Income Certificate
-          </h1>
-
-          <p className="mt-3 text-blue-100">
-            Check your documents and prepare your application.
-          </p>
-
-        </div>
-
-        {/* Checklist */}
-        <div className="mt-8 rounded-2xl bg-white p-7 shadow-sm">
-
-          <h2 className="text-2xl font-bold text-gray-900">
-            Document Checklist
-          </h2>
-
-          <p className="mt-2 text-gray-600">
-            Check each document you have.
-          </p>
-
-          <div className="mt-6 space-y-4">
-
-            {documents.map((document, index) => (
-              <label
-                key={document}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 hover:bg-gray-50"
-              >
-
-                <input
-                  type="checkbox"
-                  checked={checked[index]}
-                  onChange={() => {
-                    const updated = [...checked];
-                    updated[index] = !updated[index];
-                    setChecked(updated);
-                  }}
-                  className="h-5 w-5"
-                />
-
-                <span className="font-medium text-gray-800">
-                  {document}
-                </span>
-
-              </label>
-            ))}
-
-          </div>
-
-          {/* Progress */}
-          <div className="mt-6">
-
-            <div className="mb-2 flex justify-between text-sm">
-              <span className="font-semibold text-gray-700">
-                Checklist Progress
-              </span>
-
-              <span className="text-blue-700">
-                {completed}/{documents.length}
-              </span>
-            </div>
-
-            <div className="h-3 overflow-hidden rounded-full bg-gray-200">
-
-              <div
-                className="h-full rounded-full bg-blue-600 transition-all"
-                style={{ width: `${progress}%` }}
-              />
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="mt-8 rounded-2xl bg-white p-7 shadow-sm"
-        >
-
-          <h2 className="text-2xl font-bold text-gray-900">
-            Application Details
-          </h2>
-
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
-
-            <div>
-              <label className="mb-2 block font-semibold text-gray-700">
-                Full Name
-              </label>
-
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter full name"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-600"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block font-semibold text-gray-700">
-                Mobile Number
-              </label>
-
-              <input
-                type="tel"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                placeholder="10-digit mobile number"
-                maxLength={10}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-600"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block font-semibold text-gray-700">
-                Occupation
-              </label>
-
-              <input
-                type="text"
-                value={occupation}
-                onChange={(e) => setOccupation(e.target.value)}
-                placeholder="Enter occupation"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-600"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block font-semibold text-gray-700">
-                Annual Income
-              </label>
-
-              <input
-                type="number"
-                value={annualIncome}
-                onChange={(e) => setAnnualIncome(e.target.value)}
-                placeholder="Enter annual income"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-600"
-              />
-            </div>
-
-          </div>
-
-          <div className="mt-5">
-
-            <label className="mb-2 block font-semibold text-gray-700">
-              Address
-            </label>
-
-            <textarea
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter address"
-              rows={4}
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-600"
-            />
-
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-6 w-full rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
-          >
-            {loading ? "Submitting..." : "Submit Application"}
-          </button>
-
-        </form>
-
-        <div className="mt-6">
           <a
             href="/dashboard"
-            className="font-semibold text-blue-700 hover:underline"
+            className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
           >
-            ← Back to Dashboard
+            Dashboard
           </a>
         </div>
+      </header>
 
+      {/* BREADCRUMB */}
+      <div className="mx-auto max-w-7xl px-5 pt-7 lg:px-8">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+          <a href="/" className="hover:text-blue-600">
+            Home
+          </a>
+
+          <span>/</span>
+
+          <span>Services</span>
+
+          <span>/</span>
+
+          <span className="font-semibold text-slate-800">
+            Income Certificate
+          </span>
+        </div>
       </div>
 
+      {/* HERO */}
+      <section className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
+        <div className="grid gap-8 lg:grid-cols-[1.4fr_0.6fr]">
+          <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-7 text-white shadow-xl sm:p-10">
+            <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 text-4xl backdrop-blur">
+              📄
+            </div>
+
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-blue-100">
+              Government Service Assistance
+            </p>
+
+            <h1 className="max-w-3xl text-4xl font-black leading-tight sm:text-5xl">
+              Income Certificate
+              <br />
+              services made simple.
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-base leading-7 text-blue-100 sm:text-lg">
+              Get clear information about documents, application steps and
+              request tracking through one simple digital experience.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a
+                href="#apply"
+                className="rounded-xl bg-white px-6 py-3.5 font-bold text-blue-700 shadow-lg transition hover:-translate-y-0.5"
+              >
+                Start Application →
+              </a>
+
+              <a
+                href="#documents"
+                className="rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 font-bold text-white backdrop-blur transition hover:bg-white/20"
+              >
+                View Documents
+              </a>
+            </div>
+          </div>
+
+          {/* OVERVIEW */}
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-sm sm:p-8">
+            <p className="text-sm font-bold text-blue-600">
+              SERVICE OVERVIEW
+            </p>
+
+            <h2 className="mt-2 text-2xl font-black">
+              Everything in one place
+            </h2>
+
+            <div className="mt-7 space-y-4">
+              {[
+                [
+                  "✓",
+                  "Document checklist",
+                  "Know what documents to keep ready.",
+                ],
+                [
+                  "✓",
+                  "Application guidance",
+                  "Follow a simple step-by-step process.",
+                ],
+                [
+                  "✓",
+                  "Status tracking",
+                  "Keep track of your application request.",
+                ],
+              ].map(([icon, title, text]) => (
+                <div
+                  key={title}
+                  className="rounded-2xl bg-slate-50 p-4"
+                >
+                  <div className="flex gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 font-black text-blue-600">
+                      {icon}
+                    </span>
+
+                    <div>
+                      <h3 className="font-bold">{title}</h3>
+
+                      <p className="mt-1 text-sm leading-6 text-slate-500">
+                        {text}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DOCUMENTS */}
+      <section
+        id="documents"
+        className="border-y border-slate-200 bg-white"
+      >
+        <div className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-sm font-bold uppercase tracking-wider text-blue-600">
+              Documents
+            </p>
+
+            <h2 className="mt-2 text-3xl font-black sm:text-4xl">
+              Keep these documents ready
+            </h2>
+
+            <p className="mt-3 leading-7 text-slate-500">
+              Typical documents to keep available before starting your
+              request. Exact requirements may vary by service.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {documents.map((document, index) => (
+              <div
+                key={document}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-1 hover:border-blue-200 hover:bg-blue-50"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 font-black text-blue-600">
+                  {index + 1}
+                </div>
+
+                <h3 className="mt-5 font-bold">{document}</h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Keep a valid copy available when required.
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESS */}
+      <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
+        <div className="text-center">
+          <p className="text-sm font-bold uppercase tracking-wider text-blue-600">
+            Simple Process
+          </p>
+
+          <h2 className="mt-2 text-3xl font-black sm:text-4xl">
+            How it works
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-2xl leading-7 text-slate-500">
+            Complete your service request through a simple and transparent
+            journey.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {steps.map((step) => (
+            <div
+              key={step.number}
+              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+            >
+              <span className="text-4xl font-black text-blue-100">
+                {step.number}
+              </span>
+
+              <h3 className="mt-5 text-lg font-black">
+                {step.title}
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                {step.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section
+        id="apply"
+        className="mx-auto max-w-7xl px-5 pb-14 lg:px-8"
+      >
+        <div className="rounded-[2rem] bg-slate-900 p-8 text-white sm:p-10">
+          <div className="flex flex-col items-start justify-between gap-7 md:flex-row md:items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wider text-blue-300">
+                Ready to continue?
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black">
+                Start your income certificate application
+              </h2>
+
+              <p className="mt-2 max-w-xl text-slate-400">
+                Begin your request and follow the guided application
+                process.
+              </p>
+            </div>
+
+            <a
+              href="/dashboard"
+              className="whitespace-nowrap rounded-xl bg-blue-600 px-7 py-4 font-bold text-white transition hover:bg-blue-500"
+            >
+              Start Application →
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t border-slate-200 bg-white">
+        <div className="mx-auto max-w-4xl px-5 py-14 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-wider text-blue-600">
+              FAQ
+            </p>
+
+            <h2 className="mt-2 text-3xl font-black">
+              Frequently asked questions
+            </h2>
+          </div>
+
+          <div className="mt-8 space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index;
+
+              return (
+                <div
+                  key={faq.q}
+                  className="overflow-hidden rounded-2xl border border-slate-200"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenFaq(isOpen ? null : index)
+                    }
+                    className="flex w-full items-center justify-between gap-4 p-5 text-left font-bold"
+                  >
+                    <span>{faq.q}</span>
+
+                    <span className="text-xl text-blue-600">
+                      {isOpen ? "−" : "+"}
+                    </span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="border-t border-slate-100 px-5 pb-5 pt-4 text-sm leading-7 text-slate-500">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-slate-950 px-5 py-8 text-center text-sm text-slate-400">
+        <p>
+          © {new Date().getFullYear()} Seva Sansaar. Simplifying everyday
+          services.
+        </p>
+      </footer>
     </main>
   );
 }

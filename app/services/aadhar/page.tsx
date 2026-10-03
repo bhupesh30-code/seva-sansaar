@@ -1,368 +1,386 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "../../lib/supabase";
+import Link from "next/link";
 
-const documents = [
-  "Aadhaar Card",
-  "Proof of Identity",
-  "Proof of Address",
-  "Mobile Number",
-];
+export default function AadharPage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-export default function AadhaarPage() {
-  const [checked, setChecked] = useState<string[]>([]);
-  const [submitted, setSubmitted] = useState(false);
+  const documents = [
+    "Aadhaar Card",
+    "Proof of Identity",
+    "Proof of Address",
+    "Registered Mobile Number",
+  ];
 
-  const [name, setName] = useState("");
-  const [aadhaar, setAadhaar] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [address, setAddress] = useState("");
+  const steps = [
+    {
+      number: "01",
+      title: "Choose Service",
+      description: "Select the Aadhaar service you need.",
+    },
+    {
+      number: "02",
+      title: "Keep Documents Ready",
+      description: "Keep the required documents and details ready.",
+    },
+    {
+      number: "03",
+      title: "Submit Application",
+      description: "Complete the application and submit your request.",
+    },
+    {
+      number: "04",
+      title: "Track Application",
+      description: "Track your application status from your dashboard.",
+    },
+  ];
 
-  const [applicationId, setApplicationId] = useState("");
-
-  const toggleDocument = (document: string) => {
-    setChecked((current) =>
-      current.includes(document)
-        ? current.filter((item) => item !== document)
-        : [...current, document]
-    );
-  };
-
-  const progress = (checked.length / documents.length) * 100;
-
-  const handleSubmit = async () => {
-    if (!name || !aadhaar || !mobile || !address) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    if (aadhaar.length !== 12) {
-      alert("Please enter a 12-digit demo Aadhaar number");
-      return;
-    }
-
-    if (mobile.length !== 10) {
-      alert("Please enter a 10-digit mobile number");
-      return;
-    }
-
-    const newApplicationId = `SS-${Date.now()
-      .toString()
-      .slice(-6)}`;
-
-    const { error } = await supabase
-      .from("applications")
-      .insert({
-        application_id: newApplicationId,
-        service: "Aadhaar Update",
-        status: "Submitted",
-      });
-
-    if (error) {
-      console.error(error);
-      alert("Application save failed. Please try again.");
-      return;
-    }
-
-    setApplicationId(newApplicationId);
-    setSubmitted(true);
-  };
+  const faqs = [
+    {
+      question: "What Aadhaar services can I apply for?",
+      answer:
+        "You can use Seva Sansaar to get guidance for Aadhaar-related services such as updating personal details and other application requirements.",
+    },
+    {
+      question: "Which documents are required?",
+      answer:
+        "Typical documents include Aadhaar Card, identity proof, address proof and a registered mobile number. Exact requirements may vary depending on the service.",
+    },
+    {
+      question: "Can I track my application?",
+      answer:
+        "Yes. After submitting an application, you can use your Seva Sansaar dashboard to check its status.",
+    },
+    {
+      question: "How long does the process take?",
+      answer:
+        "Processing time depends on the service and the concerned authority. Seva Sansaar provides application guidance and status information.",
+    },
+  ];
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
+          <Link href="/" className="text-2xl font-extrabold tracking-tight">
+            Seva<span className="text-blue-600">Sansaar</span>
+          </Link>
 
-      {/* Header */}
-      <header className="bg-blue-700 px-6 py-5 text-white shadow">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <nav className="hidden items-center gap-8 md:flex">
+            <Link
+              href="/"
+              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
+            >
+              Home
+            </Link>
 
-          <div>
-            <h1 className="text-2xl font-bold">
-              Seva Sansaar
-            </h1>
+            <Link
+              href="/services/aadhar"
+              className="text-sm font-semibold text-blue-600"
+            >
+              Services
+            </Link>
 
-            <p className="text-sm text-blue-100">
-              Citizen Services Portal
-            </p>
-          </div>
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
+            >
+              Dashboard
+            </Link>
+          </nav>
 
-          <a
+          <Link
             href="/dashboard"
-            className="rounded-lg bg-white px-4 py-2 font-semibold text-blue-700 hover:bg-blue-50"
+            className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
             Dashboard
-          </a>
-
+          </Link>
         </div>
       </header>
 
-      {/* Main */}
-      <section className="mx-auto max-w-3xl px-6 py-10">
+      {/* BREADCRUMB */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-4 text-sm sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 text-slate-500">
+            <Link href="/" className="hover:text-blue-600">
+              Home
+            </Link>
 
-        <h2 className="text-3xl font-bold text-gray-900">
-          Aadhaar Update Service
-        </h2>
+            <span>/</span>
 
-        <p className="mt-2 text-gray-600">
-          Complete the checklist and fill the demo application form.
-        </p>
-
-        {/* Checklist */}
-        <div className="mt-8 rounded-2xl bg-white p-6 shadow-md">
-
-          <h3 className="text-xl font-bold text-gray-900">
-            Required Documents
-          </h3>
-
-          {/* Progress */}
-          <div className="mt-5 rounded-xl bg-blue-50 p-4">
-
-            <div className="flex items-center justify-between">
-
-              <p className="font-semibold text-blue-800">
-                Progress
-              </p>
-
-              <p className="font-bold text-blue-800">
-                {Math.round(progress)}%
-              </p>
-
-            </div>
-
-            <p className="mt-1 text-sm text-blue-700">
-              {checked.length} of {documents.length} completed
-            </p>
-
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-gray-200">
-
-              <div
-                className="h-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-
-            </div>
-
+            <span className="text-slate-900">Aadhaar Services</span>
           </div>
-
-          {/* Documents */}
-          <div className="mt-6 space-y-3">
-
-            {documents.map((document) => (
-              <label
-                key={document}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition hover:bg-gray-50"
-              >
-
-                <input
-                  type="checkbox"
-                  checked={checked.includes(document)}
-                  onChange={() => toggleDocument(document)}
-                  className="h-5 w-5"
-                />
-
-                <span
-                  className={
-                    checked.includes(document)
-                      ? "font-medium text-gray-400 line-through"
-                      : "font-medium text-gray-800"
-                  }
-                >
-                  {document}
-                </span>
-
-              </label>
-            ))}
-
-          </div>
-
-          {/* Completed */}
-          {checked.length === documents.length && (
-            <div className="mt-6 rounded-lg bg-green-100 p-4 text-green-800">
-              ✅ All checklist items completed!
-            </div>
-          )}
-
-          {/* Print */}
-          <button
-            onClick={() => window.print()}
-            className="mt-6 rounded-lg bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"
-          >
-            🖨️ Print Checklist
-          </button>
-
         </div>
-
-        {/* Application Form */}
-        {!submitted && (
-          <div className="mt-8 rounded-2xl bg-white p-6 shadow-md">
-
-            <h3 className="text-2xl font-bold text-gray-900">
-              Aadhaar Application Form
-            </h3>
-
-            <p className="mt-2 text-sm text-gray-500">
-              Demo form for Seva Sansaar.
-            </p>
-
-            {/* Name */}
-            <div className="mt-6">
-
-              <label className="font-semibold text-gray-800">
-                Full Name
-              </label>
-
-              <input
-                type="text"
-                placeholder="Enter your full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-600"
-              />
-
-            </div>
-
-            {/* Aadhaar */}
-            <div className="mt-5">
-
-              <label className="font-semibold text-gray-800">
-                Aadhaar Number
-              </label>
-
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength={12}
-                placeholder="Enter 12-digit demo number"
-                value={aadhaar}
-                onChange={(e) =>
-                  setAadhaar(
-                    e.target.value.replace(/\D/g, "")
-                  )
-                }
-                className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-600"
-              />
-
-              <p className="mt-1 text-xs text-gray-500">
-                Use only a dummy number while testing.
-              </p>
-
-            </div>
-
-            {/* Mobile */}
-            <div className="mt-5">
-
-              <label className="font-semibold text-gray-800">
-                Mobile Number
-              </label>
-
-              <input
-                type="tel"
-                inputMode="numeric"
-                maxLength={10}
-                placeholder="Enter mobile number"
-                value={mobile}
-                onChange={(e) =>
-                  setMobile(
-                    e.target.value.replace(/\D/g, "")
-                  )
-                }
-                className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-600"
-              />
-
-            </div>
-
-            {/* Address */}
-            <div className="mt-5">
-
-              <label className="font-semibold text-gray-800">
-                Address
-              </label>
-
-              <textarea
-                placeholder="Enter your address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                rows={4}
-                className="mt-2 w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-600"
-              />
-
-            </div>
-
-            {/* Submit */}
-            <button
-              onClick={handleSubmit}
-              className="mt-6 w-full rounded-lg bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"
-            >
-              Submit Application
-            </button>
-
-          </div>
-        )}
-
-        {/* Submitted */}
-        {submitted && (
-          <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 p-6">
-
-            <div className="text-4xl">
-              ✅
-            </div>
-
-            <h4 className="mt-3 text-xl font-bold text-green-800">
-              Application Submitted
-            </h4>
-
-            <p className="mt-2 text-green-700">
-              Your demo application has been saved successfully.
-            </p>
-
-            <div className="mt-4 rounded-lg bg-white p-4">
-
-              <p className="text-sm text-gray-500">
-                Application ID
-              </p>
-
-              <p className="mt-1 text-xl font-bold text-blue-700">
-                {applicationId}
-              </p>
-
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-3">
-
-              <button
-                onClick={() => window.print()}
-                className="rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800"
-              >
-                🖨️ Print Application
-              </button>
-
-              <a
-                href="/dashboard"
-                className="rounded-lg border border-blue-700 px-5 py-3 font-semibold text-blue-700 hover:bg-blue-50"
-              >
-                Back to Dashboard
-              </a>
-
-            </div>
-
-          </div>
-        )}
-
       </section>
 
-      {/* Footer */}
-      <footer className="mt-10 bg-gray-900 px-6 py-8 text-center text-white">
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700">
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-cyan-300/10 blur-3xl" />
 
-        <p className="font-semibold">
-          Seva Sansaar
-        </p>
+        <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur">
+              🪪 Aadhaar Services
+            </div>
 
-        <p className="mt-2 text-sm text-gray-400">
-          Simple • Digital • Citizen Friendly
-        </p>
+            <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Aadhaar Services
+              <span className="block text-blue-100">
+                Made Simple & Accessible
+              </span>
+            </h1>
 
+            <p className="mt-6 max-w-2xl text-base leading-7 text-blue-50 sm:text-lg">
+              Get clear information, document guidance and application support
+              for Aadhaar-related services through Seva Sansaar.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/apply?service=Aadhaar%20Services"
+                className="rounded-xl bg-white px-6 py-3.5 text-center font-bold text-blue-700 shadow-lg transition hover:bg-blue-50"
+              >
+                Start Application →
+              </Link>
+
+              <Link
+                href="#documents"
+                className="rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-center font-semibold text-white backdrop-blur transition hover:bg-white/20"
+              >
+                View Documents
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* OVERVIEW */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-blue-600">
+                Service Overview
+              </p>
+
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                Everything you need in one place
+              </h2>
+
+              <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600">
+                Seva Sansaar helps citizens understand the application process,
+                prepare required information and submit service requests in a
+                simple and organized way.
+              </p>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="text-2xl">📋</div>
+                  <h3 className="mt-3 font-bold text-slate-900">
+                    Clear Guidance
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Understand what information and documents you may need.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="text-2xl">📊</div>
+                  <h3 className="mt-3 font-bold text-slate-900">
+                    Track Status
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Check your submitted application from your dashboard.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-xl">
+              <div className="text-4xl">🪪</div>
+
+              <h3 className="mt-5 text-2xl font-bold">
+                Aadhaar Assistance
+              </h3>
+
+              <p className="mt-3 text-sm leading-7 text-slate-300">
+                Start your application journey with a simple step-by-step
+                process.
+              </p>
+
+              <Link
+                href="/apply?service=Aadhaar%20Services"
+                className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3.5 font-bold text-white transition hover:bg-blue-500"
+              >
+                Apply Now →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DOCUMENTS */}
+      <section id="documents" className="bg-slate-50">
+        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-sm font-bold uppercase tracking-widest text-blue-600">
+              Documents
+            </p>
+
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">
+              Keep these documents ready
+            </h2>
+
+            <p className="mt-4 leading-7 text-slate-600">
+              Typical documents may include the following. Exact requirements
+              can vary depending on the service.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {documents.map((document, index) => (
+              <div
+                key={document}
+                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 font-bold text-blue-600">
+                  {String(index + 1).padStart(2, "0")}
+                </div>
+
+                <h3 className="mt-5 font-bold text-slate-900">
+                  {document}
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Keep a valid and updated copy available.
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESS */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-widest text-blue-600">
+              Simple Process
+            </p>
+
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              Apply in four simple steps
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {steps.map((item) => (
+              <div
+                key={item.number}
+                className="relative rounded-2xl border border-slate-200 bg-slate-50 p-6"
+              >
+                <span className="text-sm font-extrabold text-blue-600">
+                  {item.number}
+                </span>
+
+                <h3 className="mt-4 text-lg font-bold text-slate-900">
+                  {item.title}
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-slate-950">
+        <div className="mx-auto max-w-7xl px-5 py-16 text-center sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+            Ready to start your Aadhaar application?
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-2xl leading-7 text-slate-400">
+            Start your application and follow the simple step-by-step process.
+          </p>
+
+          <Link
+            href="/apply?service=Aadhaar%20Services"
+            className="mt-8 inline-flex rounded-xl bg-blue-600 px-7 py-3.5 font-bold text-white transition hover:bg-blue-500"
+          >
+            Start Application →
+          </Link>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-4xl px-5 py-16 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-widest text-blue-600">
+              FAQ
+            </p>
+
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="mt-10 space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={faq.question}
+                className="overflow-hidden rounded-2xl border border-slate-200"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenFaq(openFaq === index ? null : index)
+                  }
+                  className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left font-semibold text-slate-900"
+                >
+                  <span>{faq.question}</span>
+
+                  <span className="text-xl text-blue-600">
+                    {openFaq === index ? "−" : "+"}
+                  </span>
+                </button>
+
+                {openFaq === index && (
+                  <div className="border-t border-slate-200 px-5 py-5 text-sm leading-7 text-slate-600">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-slate-800 bg-slate-950">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-slate-400 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <div>
+            © {new Date().getFullYear()} Seva Sansaar. All rights reserved.
+          </div>
+
+          <div className="flex gap-5">
+            <Link href="/" className="transition hover:text-white">
+              Home
+            </Link>
+
+            <Link href="/dashboard" className="transition hover:text-white">
+              Dashboard
+            </Link>
+          </div>
+        </div>
       </footer>
-
     </main>
   );
 }
