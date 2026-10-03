@@ -28,9 +28,6 @@ yarn-error.log*
 # local env files
 .env*.local
 
-# local dev data store (when Firestore is not configured)
-/data/seva-local-db.json
-
 # vercel
 .vercel
 

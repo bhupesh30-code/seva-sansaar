@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  PARTNER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  NETBANKING
+  PAY_AFTER_SERVICE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  phone     String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings Booking[]
+  partner  Partner?
+}
+
+model Partner {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  businessName String
+  approved     Boolean  @default(false)
+  commission   Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  bookings Booking[]
+  services Service[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  services Service[]
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  surgePrice  Float?
+  duration    Int
+  active      Boolean  @default(true)
+  categoryId  String
+  partnerId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category  @relation(fields: [categoryId], references: [id])
+  partner  Partner?  @relation(fields: [partnerId], references: [id])
+  bookings Booking[]
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  userId        String
+  serviceId     String
+  partnerId     String?
+  bookingDate   DateTime
+  timeSlot      String
+  quantity      Int           @default(1)
+  totalAmount   Float
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id])
+  service     Service      @relation(fields: [serviceId], references: [id])
+  partner     Partner?     @relation(fields: [partnerId], references: [id])
+  transaction Transaction?
+}
+
+model Transaction {
+  id                String        @id @default(cuid())
+  bookingId         String        @unique
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  amount            Float
+  method            PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
